@@ -1,0 +1,36 @@
+[ req ]
+
+default_bits = 2048
+default_days = 3560
+default_keyfile = reqs/test/test_key.pem
+default_md = sha256
+string_mask = utf8only
+
+distinguished_name = server_fqdn
+prompt = no
+
+req_extensions = server_extensions
+
+[ server_fqdn ]
+
+countryName = US
+stateOrProvinceName = CA
+localityName = Fremont
+organizationName = CAVCOM
+organizationalUnitName = CAVCOM Software
+commonName = testbed-servers
+emailAddress = jeffery@cavcom.com
+
+[ server_extensions ]
+
+basicConstraints = critical,CA:false
+subjectKeyIdentifier = hash
+keyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+
+[ alt_names ]
+
+DNS.1 = snow.cavcom.com
+
+IP.1 = 10.0.0.130

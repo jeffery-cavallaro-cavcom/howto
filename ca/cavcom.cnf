@@ -1,0 +1,149 @@
+# This configuration file defines the self-signed root certificate authority
+# (CA) for the cavcom.com domain.
+
+dir = /opt/ca
+domain = cavcom.com
+admin = jeffery@cavcom.com
+
+##############################################################################
+
+[ ca ]
+
+default_ca = root_ca
+
+##############################################################################
+
+[ root_ca ]
+
+# The public self-signed cert for the root CA.  This cert is used to sign all
+# certs that are issued by the root CA and so it must be included in all cert
+# chains involving the issued certs.  Note that the root CA public key is
+# included in the cert.
+
+certificate = ${dir}/cavcom_cert.pem
+
+# The private key for the root CA.  This key must not be publicly exposed.
+
+private_key = ${dir}/private/cavcom_key.pem
+
+# Each cert issued by this CA is assigned a serial number that is unique with
+# respect to the CA's fully-qualified distinguished name (FQDN).  This file
+# must be seeded with the contents '01' upon initialization.
+
+serial = ${dir}/serial/serial
+
+# An internal database used to manage the certs issued by this CA.  This file
+# must be initialized to an empty file upon initialization.
+
+database = ${dir}/index/index.txt
+
+# This is where the CA stores the certs that it has issued.  Each cert file
+# name matches the cert's serial number.
+
+new_certs_dir = ${dir}/certs
+
+# These options indicate that all options are as specified in the root CA
+# definition - there are no overrides elsewhere.
+
+name_opt = ca_default
+cert_opt = ca_default
+
+# Default values for the openssl ca command.  These values are applied when
+# constructing issued certs.
+
+default_days = 3650
+default_md = sha256
+
+# Copy the extensions in a cert request (primarily subjectAltName) into the new
+# cert, but do not override extensions specified by this configuration file.
+
+copy_extensions = copy
+
+# Set a strict policy where all fields of a FQDN must match, except for the
+# common name, which is supplied by the request.  Also, FQDN fields need not
+# be in a specific order.  Note that the email address is excluded from the
+# FQDN.
+
+policy = strict_policy
+preserve = no
+email_id_dn = no
+
+# The extensions to be added to a new cert.
+
+x509_extensions	= cert_extensions
+
+##############################################################################
+
+[ strict_policy ]
+
+countryName = match
+stateOrProvinceName = match
+localityName = match
+organizationName = match
+organizationalUnitName = match
+commonName = supplied
+emailAddress = match
+
+##############################################################################
+
+[ cert_extensions ]
+
+# Assume that all issued certs are not CAs.  This will need to be
+# changed if the CA can issue intermediary certs.
+
+basicConstraints = critical,CA:FALSE
+
+# How issued certs use their private keys.
+
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+
+# The following extensions allow applications to build a trust chain based on
+# the hash of the CA certificate.
+
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer:always
+
+##############################################################################
+
+[ req ]
+
+# The following fields are used for the self-signed CA cert request.  Note that
+# there is no default value for "days", so that option must be specified on the
+# request command line.
+
+default_bits = 3072
+default_days = 3650
+default_md = sha256
+default_keyfile = ${dir}/private/cavcom_key.pem
+string_mask = utf8only
+
+# The FQDN for the root CA.  All fields are specified, so do not prompt.
+
+distinguished_name = ca_fqdn
+prompt = no
+
+# The extensions to be included in the root cert.
+
+req_extensions	= ca_extensions
+x509_extensions	= ca_extensions
+
+##############################################################################
+
+[ ca_fqdn ]
+
+countryName = US
+stateOrProvinceName = CA
+localityName = Fremont
+organizationName = CAVCOM
+organizationalUnitName = CAVCOM Software
+commonName = ${domain}
+emailAddress = ${admin}
+
+##############################################################################
+
+[ ca_extensions ]
+
+basicConstraints = critical,CA:true
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer:always
+keyUsage = cRLSign, keyCertSign
